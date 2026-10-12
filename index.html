@@ -3,17 +3,26 @@
 
 .header-right .pill{background:#eaf7ef;color:#226347;border-color:#cde9d8}.access-hint{font-size:12px;color:#6d7882;line-height:1.7;margin-top:10px}.state-notice{border-radius:12px;padding:12px 16px;color:#7b4a18;background:#fff2dd;margin:12px 0;line-height:1.8;font-size:13px}.chat-controls{padding:12px 17px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chat-controls select{font-family:inherit;font-size:12px;padding:10px;border:1px solid #dce3e4;background:#fff;border-radius:10px;color:#1d3a4a;max-width:100%}.chat-controls label{font-weight:bold;color:#526474;font-size:12px}.chat-head .online-indicator{background:#46b68d}.chip:focus-visible,.send:focus-visible,.chat-controls select:focus-visible{outline:3px solid #e6a970}
 
+
+/* Clean chat layout: the hero is followed directly by question tools; no preloaded notices or bubbles. */
+.chat{margin-top:18px;padding-top:5px}
+.chat-controls{padding-top:16px}
+.messages{min-height:0;border-top:1px solid var(--line);padding:18px 17px 20px}
+@media(max-width:650px){.messages{min-height:0;padding:16px 12px 18px}}
+
+/* Greeting addressed to the school principal, within the original top panel. */
+.director-welcome{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin:15px 0 6px;padding-right:13px;border-right:3px solid #eeb069;color:#ffe0b3;font-size:14px;line-height:1.65}.director-welcome strong{font-size:18px;color:#fff;font-weight:700}
 </style></head>
 <body><div class="topstripe"></div><main class="shell">
 <header class="masthead"><div class="brand"><div class="brand-icon">م</div><div><p class="eyebrow">مدرسة مصعب بن الزبير للتعليم الأساسي</p><h1>مساعد الجدول المدرسي <span>الذكي</span></h1></div></div><div class="header-right"><span class="pill">نسخة تجريبية</span><span id="local-clock" class="clock">—</span></div></header>
-<section id="assistant-view"><div class="summary"><div class="summary-copy"><span class="kicker">جداول المدرسة · العام الدراسي 2026–2027</span><h2>اسأل عن أي شعبة أو معلم</h2><p>الحصص الدراسية، التفريغ التخصصي، ومناوبات المواد — بالأسماء الواردة في الجدول.</p><div id="stats" class="stats"></div></div><div class="decor" aria-hidden="true"><div class="disc">📖</div><div class="disc small">🕒</div></div></div>
-<div class="state-notice">بيانات الجدول منشورة للتجربة. مناوبة الرياضيات يوم الثلاثاء غير مؤكدة، وبعض أرقام حصص الاجتماعات التخصصية مستنتجة ولم تعتمد نهائيًا. تكليفات المتدربين لم تصل بعد.</div>
-<section class="chat card"><div class="chat-head"><div class="online-indicator"></div><div><strong>مساعد جدول مصعب</strong><span>يبحث في قاعدة الجداول المدرسية</span></div><span class="time-zone">توقيت مسقط +04:00</span></div>
-<div id="messages" class="messages" aria-live="polite"><div class="bubble bot"><strong>مرحبًا 👋</strong><p>اسألني: «خامس 1 الآن»، «أين جمال الهاشمي الآن؟»، «متى اجتماع العلوم؟»، أو «من المناوب الخميس؟».</p></div></div>
+<section id="assistant-view"><div class="summary"><div class="summary-copy"><span class="kicker">جداول المدرسة · العام الدراسي 2026–2027</span><div class="director-welcome" role="note"><span>اهلا بمدير مدرسة مصعب</span><strong>الأستاذ أحمد البلوشي</strong></div><h2>اسأل عن أي شعبة أو معلم</h2><p>الحصص الدراسية، التفريغ التخصصي، ومناوبات المواد — بالأسماء الواردة في الجدول.</p><div id="stats" class="stats"></div></div><div class="decor" aria-hidden="true"><div class="disc">📖</div><div class="disc small">🕒</div></div></div>
+
+<section class="chat card">
 <div class="chat-controls"><label for="class-choice">بحث سريع:</label><select id="class-choice" aria-label="اختر الشعبة"><option value="">اختر الشعبة</option></select><select id="teacher-choice" aria-label="اختر المعلم"><option value="">اختر المعلم</option></select></div>
 <div class="quick-queries"><button class="chip" data-question="خامس 1 الآن">خامس 1 الآن</button><button class="chip" data-question="جمال الهاشمي الآن">أين جمال الهاشمي؟</button><button class="chip" data-question="اجتماع العلوم">اجتماع العلوم</button><button class="chip" data-question="من المناوب يوم الخميس؟">مناوبة الخميس</button><button class="chip" data-question="خامس 1 الأحد الحصة الرابعة">مثال حصة مؤكدة</button></div>
-<form id="ask-form" class="ask-form"><input id="question" aria-label="اكتب سؤالك" placeholder="مثال: من يدرّس السادس (2) الآن؟" autocomplete="off" required><button type="submit" class="send" aria-label="إرسال السؤال">←</button></form>
-</section><div class="footer-note">«الآن» يعني توقيت سلطنة عمان الفعلي. المعلومات المستخرجة من ملف الجدول قد تحتاج تصحيحًا إذا طرأت تغييرات على توزيع المعلمين.</div></section>
+<form id="ask-form" class="ask-form"><input id="question" aria-label="اكتب سؤالك" placeholder="اسأل عن الشعبة أو المعلم أو الحصة الآن..." autocomplete="off" required><button type="submit" class="send" aria-label="إرسال السؤال">←</button></form>
+<div id="messages" class="messages hidden" aria-live="polite"></div>
+</section></section>
 <footer>مساعد جدول مصعب · نسخة تجريبية غير رسمية</footer></main>
 <script>
 /* Musab Timetable — deterministic, offline question interpreter; no external AI/API. */
@@ -170,11 +179,13 @@ function field(label,value){
 }
 function bubbleUser(q){const el=document.createElement('div');el.className='bubble user';el.textContent=q;messageArea.append(el);}
 function bubbleBot(r){
+ messageArea.classList.remove('hidden');
  const el=document.createElement('div');el.className='bubble bot';const title=document.createElement('strong');title.textContent=r.title;el.append(title);
  if(r.rows?.length){const grid=document.createElement('div');grid.className='answer-grid';r.rows.forEach(x=>grid.append(field(x.label,String(x.value))));el.append(grid);}
  if(r.items?.length){const list=document.createElement('ol');list.className='answer-items';r.items.forEach(i=>{const li=document.createElement('li');li.textContent=i;list.append(li);});el.append(list);}
  if(r.note){const note=document.createElement('p');note.className='answer-note'+(r.tone==='warning'?' warning':'');note.textContent=r.note;el.append(note);}
  messageArea.append(el);messageArea.scrollTop=messageArea.scrollHeight;
+ messageArea.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function ask(q){
  if(!q) return;
@@ -199,7 +210,6 @@ function init(){
   statArea.replaceChildren(...[[data.classes.length,'شعبة'],[data.teachers.length,'معلم'],[data.lessons.length,'حصة أسبوعية']].map(([v,label])=>{
    const x=document.createElement('span');x.className='stat';const n=document.createElement('strong');n.textContent=String(v);x.append(n,document.createTextNode(label));return x;}));
   setOptions();
-  bubbleBot({title:'جاهز للإجابة ✅',note:'اكتب اسم الشعبة أو المعلم مع «الآن»، أو حدد يومًا وحصة بعينها. مثال: «خامس 1 الأحد الحصة الرابعة». أسماء المعلمين كما هي في الجدول المستخرج.'});
  }catch(e){console.error(e);bubbleBot({title:'لم يتم تحميل بيانات الجدول',note:'جرّب إعادة فتح الرابط أو تحديث الصفحة.'});}
 }
 displayTime();setInterval(displayTime,30000);
