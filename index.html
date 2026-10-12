@@ -39,7 +39,6 @@
 .supporting-note{font-size:11px;line-height:1.9;color:#6a7985;margin:12px 0 0;background:#f7f9f9;border-radius:10px;padding:9px 11px}
 .detail-toggle{font:inherit;font-size:12px;color:#a75b2d;cursor:pointer;list-style:none}
 .detail-toggle::-webkit-details-marker{display:none}
-.overview details>summary{font-weight:bold;cursor:pointer;background:#f6f9f9;border:1px solid #e5eded;padding:11px;border-radius:10px;font-size:12px;list-style:inside}
 .tools-heading{margin-bottom:12px}
 .tool-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
 .tool-tab{flex:1 0 auto;background:#f8f9fa;border:1px solid #dce4e8;border-radius:12px;padding:12px 15px;font-family:inherit;color:#34536b;font-weight:bold;font-size:12px;cursor:pointer;white-space:nowrap}
@@ -82,11 +81,7 @@ body .summary{min-height:190px}
 <form id="ask-form" class="ask-form"><input id="question" aria-label="اكتب سؤالك" placeholder="اسأل عن الشعبة أو المعلم أو الحصة الآن..." autocomplete="off" required><button type="submit" class="send" aria-label="إرسال السؤال">←</button></form>
 <div id="messages" class="messages hidden" aria-live="polite"></div>
 </section>
-<section class="section-card card overview" aria-labelledby="overview-title">
- <div class="section-heading"><div><h2 id="overview-title">📅 الجدول العام لليوم الدراسي</h2><p>ملخص تلقائي لكل الشعب والحصص، دون الحاجة لاختيار شعبة.</p></div><span id="load-message" class="status-small" role="status">جارٍ تجهيز البيانات…</span></div>
- <div class="tool-filters"><label class="tool-field">يوم العرض <select id="overview-day" aria-label="اليوم المعروض في الملخص العام"></select></label></div>
- <div id="overview-results" class="tool-results" aria-live="polite"></div>
-</section>
+
 <section class="section-card card" aria-labelledby="tools-title">
  <div class="section-heading tools-heading"><div><h2 id="tools-title">🧭 أدوات مدير المدرسة</h2><p>تقارير المعلمين، تحليل الأنصبة، والفترات غير المشغولة بالتدريس.</p></div></div>
  <div class="tool-tabs" role="tablist" aria-label="الأدوات الإدارية">
@@ -383,13 +378,13 @@ function setOptions(){const classes=data.classes.map(c=>({value:c.class_id,text:
  fillSelect($('class-choice'),classes,'اختر الشعبة');fillSelect($('teacher-choice'),teachers,'اختر المعلم');fillSelect($('report-teacher'),teachers,'اختر المعلم');
  fillSelect($('load-subject'),[{value:'all',text:'جميع التخصصات'},...analytics.subjects.map(s=>({value:s,text:s}))],null);
  fillSelect($('free-subject'),[{value:'all',text:'كل التخصصات'},...analytics.subjects.map(s=>({value:s,text:s}))],null);
- configureDaySelect('report-day',{defaultSchool:true});configureDaySelect('overview-day',{defaultSchool:true});configureDaySelect('free-day',{defaultSchool:true});
+ configureDaySelect('report-day',{defaultSchool:true});configureDaySelect('free-day',{defaultSchool:true});
  fillSelect($('free-period'),analytics.periods.map(p=>({value:String(p.period),text:analytics.periodName(p.period)+' · '+p.start+'–'+p.end})),null);
  const now=core.localClock(),calc=engine.getTiming();$('free-period').value=String(calc.type==='lesson'?calc.period:calc.nextPeriod||1);
  $('class-choice').addEventListener('change',()=>{const id=$('class-choice').value;if(id){$('teacher-choice').value='';ask(analytics.classLabel(id)+' الآن');}});
  $('teacher-choice').addEventListener('change',()=>{const name=$('teacher-choice').value;if(name){$('class-choice').value='';$('report-teacher').value=name;openTab('teacher');renderTeacher();ask('تقرير '+name+' '+(core.localClock().dayIndex>4?'الأحد':'اليوم'));}});
  $('report-teacher').addEventListener('change',renderTeacher);$('report-day').addEventListener('change',renderTeacher);
- $('load-subject').addEventListener('change',renderWorkload);$('free-day').addEventListener('change',renderFree);$('free-period').addEventListener('change',renderFree);$('free-subject').addEventListener('change',renderFree);$('overview-day').addEventListener('change',renderOverview);
+ $('load-subject').addEventListener('change',renderWorkload);$('free-day').addEventListener('change',renderFree);$('free-period').addEventListener('change',renderFree);$('free-subject').addEventListener('change',renderFree);
  $('report-go').addEventListener('click',renderTeacher);$('free-go').addEventListener('click',renderFree);
 }
 function renderHeroToday(){const el=$('today-mini'),clock=core.localClock(),timing=engine.getTiming();const today=analytics.getGeneralDay(clock.dayIndex);clear(el);
@@ -399,15 +394,6 @@ function renderHeroToday(){const el=$('today-mini'),clock=core.localClock(),timi
  const duties=today.duties.map(x=>x.subject+(x.confirmed?'':' (غير مؤكدة)')).join(' + ')||'لا توجد مناوبة مسجلة';
  const meetings=today.meetings.map(x=>x.subject+' ('+analytics.periodName(x.period)+(x.period_confirmed?'':'، موعد الحصة مرجّح')+')').join(' · ')||'لا يوجد تفريغ تخصصي مسجل';
  const details=n('div','today-details');details.append(n('b','',`مناوبة اليوم: `),document.createTextNode(duties),document.createElement('br'),n('b','',`التفريغ التخصصي: `),document.createTextNode(meetings));el.append(details);
-}
-function renderOverview(){const day=selectedDay('overview-day'),o=analytics.getGeneralDay(day),box=clear($('overview-results'));
- if(o.isHoliday){box.append(n('div','placeholder-hint','اليوم عطلة أسبوعية. اختر يومًا دراسيًا لعرض جدول المدرسة العام.'));return;}
- box.append(statsRow([{value:31,label:'شعبة'},{value:o.totalLessons,label:'حصة للشعب في هذا اليوم'},{value:8,label:'فترات دراسية'}]));
- const duty=o.duties.map(x=>x.subject+(x.confirmed?'':' (غير مؤكدة)')).join(' + ');
- const meets=o.meetings.map(x=>x.subject+' · '+analytics.periodName(x.period)+(x.period_confirmed?'':' (الحصة مرجحة)')).join(' ؛ ');
- box.append(n('p','supporting-note','المناوبة: '+(duty||'غير مسجلة')+' | التفريغ التخصصي: '+(meets||'غير مسجل')));
- box.append(table(['الحصة والوقت','الشعب المجدولة','معلمون يدرسون','مواد مختلفة'],o.slots.map(s=>[s.label+' · '+s.time,s.classes,s.teachers,s.subjects])));
- box.append(warning('ملخص عام محسوب من جداول الشعب الـ31. الحصص المزدوجة تُحسب ضمن كل فترة تشغلها، ولا يتضمن الجدول تكليفات الاحتياط غير المسجلة.'));
 }
 function renderTeacher(){const box=clear($('report-results')),name=$('report-teacher').value,day=selectedDay('report-day',true);
  if(!name){box.append(n('div','placeholder-hint','اختر اسم المعلم ليظهر تقرير اليوم، مع جميع الحصص المسجلة والفترات دون تدريس ومناوبة تخصصه.'));return;}
@@ -444,8 +430,8 @@ function openTab(key){document.querySelectorAll('.tool-tab').forEach(b=>{const s
  document.querySelectorAll('.tool-panel').forEach(p=>p.hidden=p.id!==('tool-'+key));}
 function init(){try{if(!data||!Array.isArray(data.lessons)||!core||!window.MusabAnalytics)throw Error('Missing data');engine=core.create(data);analytics=window.MusabAnalytics.create(data);
  stats.replaceChildren(...[[data.classes.length,'شعبة'],[data.teachers.length,'معلم'],[data.lessons.length,'حصة أسبوعية']].map(([v,label])=>{const el=n('span','stat');el.append(n('strong','',v),document.createTextNode(label));return el;}));
- setOptions();renderHeroToday();renderOverview();renderTeacher();renderWorkload();renderFree();$('load-message').textContent='جميع الجداول جاهزة للبحث';
- }catch(e){console.error(e);$('today-mini').textContent='تعذر تجهيز ملخص اليوم. جرّب تحديث الصفحة.';$('load-message').textContent='تعذر تحميل البيانات';resultBubble({title:'تعذر تحميل بيانات الجدول.',note:'يرجى تحديث الصفحة.'});}}
+ setOptions();renderHeroToday();renderTeacher();renderWorkload();renderFree();
+ }catch(e){console.error(e);$('today-mini').textContent='تعذر تجهيز ملخص اليوم. جرّب تحديث الصفحة.';resultBubble({title:'تعذر تحميل بيانات الجدول.',note:'يرجى تحديث الصفحة.'});}}
  $('ask-form').addEventListener('submit',e=>{e.preventDefault();ask($('question').value);});
  document.querySelectorAll('[data-question]').forEach(el=>el.addEventListener('click',()=>ask(el.dataset.question)));
  document.querySelectorAll('.tool-tab').forEach(el=>el.addEventListener('click',()=>openTab(el.dataset.tab)));
